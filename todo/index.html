@@ -1,0 +1,74 @@
+<!doctype html>
+<html ng-app='toDoApp'>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+</head>
+<body> 
+<div class='container'>
+  <div class='row'>
+
+    <div class='col-md-2'></div>
+    <div class='col-md-8'>
+      <div ng-controller='toDoCtrl'>
+        <div class='header'>
+          <h1 class='text-center'>List of tasks</h1>
+            <div class='d-flex justify-content-center'>
+            <input class='input' placeholder='What needs to be done?' ng-model='todoTitle'>
+            <button class='btn btn-primary' ng-click='addToDo()'>Add</button>
+            </div>
+          
+        </div>
+
+        <ul>
+            <li ng-repeat="todo in todos" ng-click='changeStatus(todo.id)' ng-class='{done:todo.isDone}'>
+            {{todo.title}}
+            <i class='delete-btn far fa-times-circle' ng-click='deleteToDo(todo.id,$event)'></i>
+            </li>
+        </ul>
+
+      </div>
+    </div>
+
+    <div class='col-md-2'></div>
+  </div>
+</div>
+      
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+<script>
+  let toDoApp = angular.module('toDoApp', []);
+  toDoApp.controller('toDoCtrl', function ($scope, $http) {
+  $scope.todos = $http({method: 'GET', url: 'http://localhost:3000/api/todos'}).
+    then(function success(response) {
+        $scope.todos=response.data;
+  });;
+
+  $scope.addToDo = function (title) {
+    $http({method: 'POST', url: 'http://localhost:3000/api/todos', data: {title: $scope.todoTitle, isDone: false}}).
+    then(function success(response) {
+        $scope.todos.push(response.data);
+    });;
+    $scope.todoTitle = '';
+  }
+
+  $scope.deleteToDo = function (id,$event) {
+    $event.stopPropagation();
+    $http({method: 'DELETE', url: `http://localhost:3000/api/todos/${id}`}).
+    then(function success(response) {
+        $scope.todos=response.data;
+    });
+    }  
+  
+  $scope.changeStatus = function (id) {
+    $http({method: 'PUT', url: `http://localhost:3000/api/todos/${id}`}).
+    then(function success(response) {
+        $scope.todos=response.data;
+    });
+  }  
+  
+  });
+  </script>
+</body>
+</html>
